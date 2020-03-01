@@ -273,6 +273,7 @@ impl CursorRenderer {
             cursor: Cursor, default_colors: &Colors, 
             font_width: f32, font_height: f32,
             shaper: &mut CachingShaper, canvas: &mut Canvas,
+            margin_horiz: i32, margin_vert:i32,
             dt: f32) {
         let render = self.blink_status.update_status(&cursor);
 
@@ -365,11 +366,12 @@ impl CursorRenderer {
 
             // The cursor is made up of four points, so I create a path with each of the four
             // corners.
+            let margin_offset = Point::new(margin_horiz as f32, margin_vert as f32);
             let mut path = Path::new();
-            path.move_to(self.corners[0].current_position);
-            path.line_to(self.corners[1].current_position);
-            path.line_to(self.corners[2].current_position);
-            path.line_to(self.corners[3].current_position);
+            path.move_to(self.corners[0].current_position + margin_offset);
+            path.line_to(self.corners[1].current_position + margin_offset);
+            path.line_to(self.corners[2].current_position + margin_offset);
+            path.line_to(self.corners[3].current_position + margin_offset);
             path.close();
             canvas.draw_path(&path, &paint);
 

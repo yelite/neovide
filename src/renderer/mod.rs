@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use skulpin::CoordinateSystemHelper;
-use skulpin::skia_safe::{Canvas, Paint, Surface, Budgeted, Rect, colors, dash_path_effect};
+use skulpin::skia_safe::{Canvas, ISize, Paint, Surface, Budgeted, Rect, colors, dash_path_effect};
 use skulpin::skia_safe::gpu::SurfaceOrigin;
 use log::trace;
 
@@ -12,6 +12,28 @@ pub use caching_shaper::CachingShaper;
 
 use cursor_renderer::CursorRenderer;
 use crate::editor::{EDITOR, Style};
+use crate::settings::*;
+
+// ----------------------------------------------------------------------------
+
+#[derive(Clone)]
+pub struct RendererSettings {
+    margin_horiz: i32,
+    margin_vert: i32,
+}
+
+pub fn initialize_settings() {
+    
+    SETTINGS.set(&RendererSettings {
+        margin_horiz: 0,
+        margin_vert: 0,
+    });
+    
+    register_nvim_setting!("window_margin_horiz", RendererSettings::margin_horiz);
+    register_nvim_setting!("window_margin_vert", RendererSettings::margin_vert);
+}
+
+// ----------------------------------------------------------------------------
 
 
 pub struct Renderer {
@@ -19,6 +41,8 @@ pub struct Renderer {
     paint: Paint,
     shaper: CachingShaper,
 
+    pub margin_horiz: i32,
+    pub margin_vert: i32,
     pub font_width: f32,
     pub font_height: f32,
     cursor_renderer: CursorRenderer,
@@ -34,8 +58,18 @@ impl Renderer {
 
         let (font_width, font_height) = shaper.font_base_dimensions();
         let cursor_renderer = CursorRenderer::new();
+        
+        let settings = SETTINGS.get::<RendererSettings>();
 
-        Renderer { surface, paint, shaper, font_width, font_height, cursor_renderer }
+        let margin_horiz = settings.margin_horiz;
+        let margin_vert = settings.margin_vert;
+
+        Renderer { surface, paint, shaper, margin_horiz, margin_vert, font_width, font_height, cursor_renderer }
+    }
+
+    pub fn margin_changed(&self) -> bool {
+        let settings = SETTINGS.get::<RendererSettings>();
+        settings.margin_horiz != self.margin_horiz || settings.margin_vert != self.margin_vert
     }
 
     fn set_font(&mut self, name: Option<&str>, size: Option<f32>) {
@@ -137,7 +171,14 @@ impl Renderer {
         let mut surface = self.surface.take().unwrap_or_else(|| {
             let mut context = gpu_canvas.gpu_context().unwrap();
             let budgeted = Budgeted::YES;
-            let image_info = gpu_canvas.image_info();
+            let image_info = {
+                let image_info = gpu_canvas.image_info();
+                let window_size = image_info.dimensions();
+                image_info.with_dimensions(
+                    ISize::new(window_size.width - self.margin_horiz * 2,
+                    window_size.height - self.margin_vert * 2))
+            };
+
             let surface_origin = SurfaceOrigin::TopLeft;
             let mut surface = Surface::new_render_target(&mut context, budgeted, &image_info, None, surface_origin, None, None).expect("Could not create surface");
             let canvas = surface.canvas();
@@ -157,7 +198,12 @@ impl Renderer {
 
         let image = surface.image_snapshot();
         let window_size = coordinate_system_helper.window_logical_size();
-        let image_destination = Rect::new(0.0, 0.0, window_size.width as f32, window_size.height as f32);
+        let image_destination = Rect::new(
+            self.margin_horiz as f32, 
+            self.margin_vert as f32, 
+            (window_size.width as i32 - self.margin_horiz) as f32,
+            (window_size.height as i32 - self.margin_vert) as f32);
+
         gpu_canvas.draw_image_rect(image, None, &image_destination, &self.paint);
 
         self.surface = Some(surface);
@@ -165,7 +211,9 @@ impl Renderer {
         self.cursor_renderer.draw(
             cursor, &default_style.colors, 
             self.font_width, self.font_height, 
-            &mut self.shaper, gpu_canvas, dt);
+            &mut self.shaper, gpu_canvas, 
+            self.margin_horiz, self.margin_vert,
+            dt);
 
         font_changed
     }

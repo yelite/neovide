@@ -32,10 +32,12 @@ fn windows_fix_dpi() {
 
 fn handle_new_grid_size(new_size: LogicalSize, renderer: &Renderer) {
     if new_size.width > 0 && new_size.height > 0 {
-        let new_width = ((new_size.width + 1) as f32 / renderer.font_width) as u32;
-        let new_height = ((new_size.height + 1) as f32 / renderer.font_height) as u32;
+        // TODO -- Why does it work here if I subtract the margin once, but not twice? It should be
+        // twice, shouldn't it?
+        let new_width = ((new_size.width as i32 + 1 - renderer.margin_horiz) as f32 / renderer.font_width) as u32;
+        let new_height = ((new_size.height as i32 + 1 - renderer.margin_vert) as f32 / renderer.font_height) as u32;
         // Add 1 here to make sure resizing doesn't change the grid size on startup
-        BRIDGE.queue_command(UiCommand::Resize { width: new_width, height: new_height });
+        BRIDGE.queue_command(UiCommand::Resize { width: new_width, height: new_height }); // TODO -- It seems changing the margin by less than one character won't trigger the surface recreation, and everything becomes borked
     }
 }
 
@@ -61,8 +63,8 @@ impl WindowWrapper {
 
         let renderer = Renderer::new();
         let logical_size = LogicalSize {
-            width: (width as f32 * renderer.font_width) as u32, 
-            height: (height as f32 * renderer.font_height + 1.0) as u32
+            width: (width as f32 * renderer.font_width + 2.0 * renderer.margin_horiz as f32) as u32, 
+            height: (height as f32 * renderer.font_height + 1.0 + 2.0 * renderer.margin_vert as f32) as u32
         };
         
         #[cfg(target_os = "windows")]
@@ -222,6 +224,11 @@ impl WindowWrapper {
     }
 
     pub fn draw_frame(&mut self) -> bool {
+
+        if self.renderer.margin_changed() {
+            handle_new_grid_size(self.previous_size, &self.renderer);
+        }
+
         if let Ok(new_size) = LogicalSize::new(&self.window) {
             if self.previous_size != new_size {
                 handle_new_grid_size(new_size, &self.renderer);
