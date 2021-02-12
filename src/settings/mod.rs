@@ -147,6 +147,16 @@ impl Settings {
                     name
                 ));
         }
+
+        let vimscript = concat!(
+            "exe \"",
+            "fun! NeovideNotifyWinblendChanged()\n",
+            "call rpcnotify(1, 'option_changed', 'winblend', v:option_new)\n",
+            "endf\n",
+            "au OptionSet winblend call NeovideNotifyWinblendChanged()\"");
+        nvim.command(&vimscript)
+            .await
+            .unwrap_or_explained_panic("Could not setup option notifier for winblend");
     }
 
     pub fn handle_changed_notification(&self, arguments: Vec<Value>) {

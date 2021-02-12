@@ -464,7 +464,7 @@ fn parse_option_set(option_set_arguments: Vec<Value>) -> Result<RedrawEvent> {
             "pumblend" => GuiOption::Pumblend(parse_u64(value)?),
             "showtabline" => GuiOption::ShowTabLine(parse_u64(value)?),
             "termguicolors" => GuiOption::TermGuiColors(parse_bool(value)?),
-            _ => GuiOption::Unknown(name, value),
+            _ => GuiOption::Unknown(dbg!(name), value),
         },
     })
 }
