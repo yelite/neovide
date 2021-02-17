@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{parse_macro_input, Attribute, Data, DataStruct, DeriveInput, Error, Ident, Lit, Meta, Field, MetaNameValue};
 
@@ -72,7 +73,7 @@ fn parse_setting_type(field: &Field) -> Result<SettingType, Error> {
     }
 }
 
-fn build_variable_fragments(vim_setting_name: &str, field_name: &Ident, struct_name: &Ident) -> TokenStream {
+fn build_variable_fragments(vim_setting_name: &str, field_name: &Ident, struct_name: &Ident) -> TokenStream2 {
     let output_stream = quote! {{
         fn update_func(value: rmpv::Value) {
             let mut s = crate::settings::SETTINGS.get::<#struct_name>();
@@ -94,7 +95,7 @@ fn build_variable_fragments(vim_setting_name: &str, field_name: &Ident, struct_n
     output_stream.into()
 }
 
-fn build_option_fragments(vim_option_name: &str, field_name: &Ident, struct_name: &Ident) -> TokenStream {
+fn build_option_fragments(vim_option_name: &str, field_name: &Ident, struct_name: &Ident) -> TokenStream2 {
 
 }
 
