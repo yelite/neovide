@@ -4,12 +4,18 @@ use quote::quote;
 use syn::{parse_macro_input, Attribute, Data, DataStruct, DeriveInput, Error, Ident, Lit, Meta, Field, MetaNameValue};
 
 enum SettingType {
-    Default,
-    Global(String),
-    Option(String),
+    VimGlobal,
+    VimOption,
+    Environment,
+    CommandLineArgument,
 }
 
-#[proc_macro_derive(SettingGroup, attributes(setting_prefix, option, global))]
+struct SettingData {
+    settingType: SettingType,
+    name: String,
+}
+
+#[proc_macro_derive(SettingGroup, attributes(setting_prefix, name, opt, env, cli))]
 pub fn derive_setting_group(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
     let prefix = setting_prefix(input.attrs.as_ref())
@@ -32,7 +38,6 @@ fn derive_register_function(struct_name: Ident, prefix: String, data: &DataStruc
                     build_variable_fragments(&vim_setting_name, field_name, &struct_name)
                 },
                 Ok(SettingType::Global(vim_setting_name)) => build_variable_fragments(&vim_setting_name, field_name, &struct_name),
-                Ok(SettingType::Option(vim_option_name)) => build_option_fragments(&vim_option_name, field_name, &struct_name),
                 Err(error) => error.to_compile_error().into(),
             }
         } else {
@@ -51,16 +56,14 @@ fn derive_register_function(struct_name: Ident, prefix: String, data: &DataStruc
     })
 }
 
-fn parse_setting_type(field: &Field) -> Result<SettingType, Error> {
+fn parse_setting_data(field: &Field) -> Result<SettingData, Error> {
     if field.attrs.len() > 1 {
         return Err(Error::new_spanned(field, "Field has multiple attributes"));
     }
 
     if let Some(attribute) = field.attrs.first() {
         if let Ok(Meta::NameValue(MetaNameValue { lit: Lit::Str(name), .. })) = attribute.parse_meta() {
-            if attribute.path.is_ident("option") {
-                Ok(SettingType::Option(name.value()))
-            } else if attribute.path.is_ident("global") {
+            if attribute.path.is_ident("global") {
                 Ok(SettingType::Global(name.value()))
             } else {
                 Err(Error::new_spanned(attribute, format!("Field attribute with path {:?} not recognized", attribute.path)))
@@ -93,10 +96,6 @@ fn build_variable_fragments(vim_setting_name: &str, field_name: &Ident, struct_n
         );
     }};
     output_stream.into()
-}
-
-fn build_option_fragments(vim_option_name: &str, field_name: &Ident, struct_name: &Ident) -> TokenStream2 {
-
 }
 
 fn setting_prefix(attrs: &[Attribute]) -> Option<String> {
