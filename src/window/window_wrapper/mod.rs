@@ -233,7 +233,7 @@ pub fn start_loop(
         .with_pixel_format(24, 8)
         .with_stencil_buffer(8)
         .with_gl_profile(GlProfile::Core)
-        .with_vsync(false)
+        // .with_vsync(true)
         .with_srgb(false)
         .build_windowed(winit_window_builder, &event_loop)
         .unwrap();
@@ -298,7 +298,7 @@ pub fn start_loop(
             previous_frame_start = frame_start;
         }
 
-        *control_flow = ControlFlow::WaitUntil(previous_frame_start + frame_duration)
+        *control_flow = ControlFlow::Poll
     });
 }
 

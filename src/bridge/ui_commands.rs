@@ -1,8 +1,10 @@
-use log::trace;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
+use crossfire::mpsc::{unbounded_future, TxUnbounded, RxUnbounded};
+use log::trace;
 #[cfg(windows)]
 use log::error;
-
 use nvim_rs::Neovim;
 
 use crate::bridge::TxWrapper;
@@ -44,6 +46,15 @@ pub enum UiCommand {
 }
 
 impl UiCommand {
+    fn ok_to_drop(&self) -> bool {
+        match self {
+            UiCommand::Resize { .. } | 
+            UiCommand::Scroll { .. } | 
+            UiCommand::Drag { .. } => true,
+            _ => false
+        }
+    }
+
     pub async fn execute(self, nvim: &Neovim<TxWrapper>) {
         match self {
             UiCommand::Quit => {
@@ -143,4 +154,71 @@ impl UiCommand {
             }
         }
     }
+}
+
+pub fn start_command_processors(ui_command_receiver: RxUnbounded<UiCommand>, running: Arc<AtomicBool>, nvim: Arc<Neovim<TxWrapper>>) {
+    let (droppable_sender, droppable_receiver) = unbounded_future::<UiCommand>();
+    let (non_droppable_sender, non_droppable_receiver) = unbounded_future::<UiCommand>();
+
+    let droppable_nvim = nvim.clone();
+    let droppable_running = running.clone();
+    tokio::spawn(async move {
+        loop {
+            if !droppable_running.load(Ordering::Relaxed) {
+                break;
+            }
+
+            let mut latest = droppable_receiver.recv().await.expect("Could not recieve droppable ui command");
+            while let Ok(new_latest) = droppable_receiver.try_recv() {
+                latest = new_latest;
+            }
+
+            let nvim = droppable_nvim.clone();
+            tokio::spawn(async move {
+                latest.execute(&nvim).await;
+            });
+        }
+    });
+
+    let non_droppable_nvim = nvim.clone();
+    let non_droppable_running = running.clone();
+    tokio::spawn(async move {
+        loop {
+            if !non_droppable_running.load(Ordering::Relaxed) {
+                break;
+            }
+
+            match non_droppable_receiver.recv().await {
+                Ok(non_droppable_ui_command) => {
+                    non_droppable_ui_command.execute(&non_droppable_nvim).await;
+                },
+                Err(_) => {
+                    non_droppable_running.store(false, Ordering::Relaxed);
+                    break;
+                }
+            }
+        }
+    });
+
+    tokio::spawn(async move {
+        loop {
+            if !running.load(Ordering::Relaxed) {
+                break;
+            }
+
+            match ui_command_receiver.recv().await {
+                Ok(ui_command) => {
+                    if ui_command.ok_to_drop() {
+                        droppable_sender.send(ui_command).expect("Could not send droppable command");
+                    } else {
+                        non_droppable_sender.send(ui_command).expect("Could not send non droppable command");
+                    }
+                }
+                Err(_) => {
+                    running.store(false, Ordering::Relaxed);
+                    break;
+                }
+            }
+        }
+    });
 }

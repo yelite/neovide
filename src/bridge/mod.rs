@@ -23,7 +23,7 @@ pub use events::*;
 use handler::NeovimHandler;
 use regex::Regex;
 pub use tx_wrapper::{TxWrapper, WrapTx};
-pub use ui_commands::UiCommand;
+pub use ui_commands::{start_command_processors, UiCommand};
 
 #[cfg(windows)]
 fn set_windows_creation_flags(cmd: &mut Command) {
@@ -289,29 +289,7 @@ async fn start_neovim_runtime(
     info!("Neovim process attached");
 
     let nvim = Arc::new(nvim);
-
-    let ui_command_running = running.clone();
-    let input_nvim = nvim.clone();
-    tokio::spawn(async move {
-        loop {
-            if !ui_command_running.load(Ordering::Relaxed) {
-                break;
-            }
-
-            match ui_command_receiver.recv().await {
-                Ok(ui_command) => {
-                    let input_nvim = input_nvim.clone();
-                    tokio::spawn(async move {
-                        ui_command.execute(&input_nvim).await;
-                    });
-                }
-                Err(_) => {
-                    ui_command_running.store(false, Ordering::Relaxed);
-                    break;
-                }
-            }
-        }
-    });
+    start_command_processors(ui_command_receiver, running.clone(), nvim.clone());
 
     SETTINGS.read_initial_values(&nvim).await;
     SETTINGS.setup_changed_listeners(&nvim).await;
