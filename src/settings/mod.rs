@@ -36,7 +36,8 @@ type ReaderFunc = fn() -> Value;
 // struct except when prompted by an update event from nvim. Otherwise, the settings in Neovide and
 // nvim will get out of sync.
 pub struct Settings {
-    settings: RwLock<HashMap<TypeId, Box<dyn Any + Send + Sync>>>,
+    global_settings: RwLock<HashMap<TypeId, Box<dyn Any + Send + Sync>>>,
+    grid_settings: RwLock<HashMap<(TypeId, u64), Box<dyn Any + Send + Sync>>>,
     listeners: RwLock<HashMap<String, UpdateHandlerFunc>>,
     readers: RwLock<HashMap<String, ReaderFunc>>,
 }
@@ -44,7 +45,8 @@ pub struct Settings {
 impl Settings {
     fn new() -> Self {
         Self {
-            settings: RwLock::new(HashMap::new()),
+            global_settings: RwLock::new(HashMap::new()),
+            grid_settings: RwLock::new(HashMap::new()),
             listeners: RwLock::new(HashMap::new()),
             readers: RwLock::new(HashMap::new()),
         }
@@ -64,20 +66,41 @@ impl Settings {
             .insert(String::from(property_name), reader_func);
     }
 
-    pub fn set<T: Clone + Send + Sync + 'static>(&self, t: &T) {
+    pub fn set_global<T: Clone + Send + Sync + 'static>(&self, settings_struct: &T) {
         let type_id: TypeId = TypeId::of::<T>();
-        let t: T = (*t).clone();
+        let settings_struct: T = (*settings_struct).clone();
         unsafe {
-            self.settings.force_unlock_write();
+            self.global_settings.force_unlock_write();
         }
-        let mut write_lock = self.settings.write();
-        write_lock.insert(type_id, Box::new(t));
+        let mut write_lock = self.global_settings.write();
+        write_lock.insert(type_id, Box::new(settings_struct));
     }
 
-    pub fn get<T: Clone + Send + Sync + 'static>(&'_ self) -> T {
-        let read_lock = self.settings.read();
+    pub fn set_grid<T: Clone + Send + Sync + 'static>(&self, settings_struct: &T, grid_id: u64) {
+        let type_id: TypeId = TypeId::of::<T>();
+        let settings_struct: T = (*settings_struct).clone();
+        unsafe {
+            self.global_settings.force_unlock_write();
+        }
+        let mut write_lock = self.grid_settings.write();
+        write_lock.insert((type_id, grid_id), Box::new(settings_struct));
+    }
+
+    pub fn get_global<T: Clone + Send + Sync + 'static>(&'_ self) -> T {
+        let read_lock = self.global_settings.read();
         let boxed = &read_lock
             .get(&TypeId::of::<T>())
+            .expect("Trying to retrieve a settings object that doesn't exist: {:?}");
+        let value: &T = boxed
+            .downcast_ref::<T>()
+            .expect("Attempted to extract a settings object of the wrong type");
+        (*value).clone()
+    }
+
+    pub fn get_grid<T: Clone + Send + Sync + 'static>(&'_ self, grid_id: u64) -> T {
+        let read_lock = self.grid_settings.read();
+        let boxed = &read_lock
+            .get(&(TypeId::of::<T>(), grid_id))
             .expect("Trying to retrieve a settings object that doesn't exist: {:?}");
         let value: &T = boxed
             .downcast_ref::<T>()
