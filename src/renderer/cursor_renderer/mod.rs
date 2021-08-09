@@ -267,7 +267,7 @@ impl CursorRenderer {
     ) {
         let (font_width, font_height) = font_size;
         let render = self.blink_status.update_status(&self.cursor);
-        let settings = SETTINGS.get::<CursorSettings>();
+        let settings = SETTINGS.get_global::<CursorSettings>();
 
         if settings.vfx_mode != self.previous_vfx_mode {
             self.cursor_vfx = cursor_vfx::new_cursor_vfx(&settings.vfx_mode);

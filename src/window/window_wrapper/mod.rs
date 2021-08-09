@@ -72,7 +72,7 @@ impl GlutinWindowWrapper {
     }
 
     pub fn synchronize_settings(&mut self) {
-        let fullscreen = { SETTINGS.get::<WindowSettings>().fullscreen };
+        let fullscreen = { SETTINGS.get_global::<WindowSettings>().fullscreen };
 
         if self.fullscreen != fullscreen {
             self.toggle_fullscreen();
@@ -98,7 +98,7 @@ impl GlutinWindowWrapper {
     }
 
     pub fn handle_quit(&mut self, running: &Arc<AtomicBool>) {
-        if SETTINGS.get::<CmdLineSettings>().remote_tcp.is_none() {
+        if SETTINGS.get_global::<CmdLineSettings>().remote_tcp.is_none() {
             self.ui_command_sender
                 .send(UiCommand::Quit)
                 .expect("Could not send quit command to bridge");
@@ -164,7 +164,7 @@ impl GlutinWindowWrapper {
     pub fn draw_frame(&mut self, dt: f32) {
         let window = self.windowed_context.window();
 
-        if REDRAW_SCHEDULER.should_draw() || SETTINGS.get::<WindowSettings>().no_idle {
+        if REDRAW_SCHEDULER.should_draw() || SETTINGS.get_global::<WindowSettings>().no_idle {
             self.renderer.draw_frame(self.skia_renderer.canvas(), dt);
             self.skia_renderer.gr_context.flush(None);
             self.windowed_context.swap_buffers().unwrap();
@@ -176,7 +176,7 @@ impl GlutinWindowWrapper {
         }
 
         if self.saved_grid_size.is_none() && !window.is_maximized() {
-            let size = SETTINGS.get::<CmdLineSettings>().geometry;
+            let size = SETTINGS.get_global::<CmdLineSettings>().geometry;
             window.set_inner_size(self.renderer.to_physical_size((size.width, size.height)));
             self.saved_grid_size = Some(size);
         }
@@ -230,18 +230,20 @@ pub fn create_window(
 
     let event_loop = EventLoop::new();
 
+    let cmd_line_settings = SETTINGS.get_global::<CmdLineSettings>();
+
     let winit_window_builder = window::WindowBuilder::new()
         .with_title("Neovide")
         .with_window_icon(Some(icon))
-        .with_maximized(SETTINGS.get::<CmdLineSettings>().maximized)
-        .with_decorations(!SETTINGS.get::<CmdLineSettings>().frameless);
+        .with_maximized(cmd_line_settings.maximized)
+        .with_decorations(!cmd_line_settings.frameless);
 
     #[cfg(target_os = "linux")]
     let winit_window_builder = winit_window_builder
-        .with_app_id(SETTINGS.get::<CmdLineSettings>().wayland_app_id)
+        .with_app_id(cmd_line_settings.wayland_app_id)
         .with_class(
             "neovide".to_string(),
-            SETTINGS.get::<CmdLineSettings>().x11_wm_class,
+            cmd_line_settings.x11_wm_class,
         );
 
     let windowed_context = ContextBuilder::new()
@@ -297,7 +299,7 @@ pub fn create_window(
         window_wrapper.synchronize_settings();
         window_wrapper.handle_event(e, &running);
 
-        let refresh_rate = { SETTINGS.get::<WindowSettings>().refresh_rate as f32 };
+        let refresh_rate = { SETTINGS.get_global::<WindowSettings>().refresh_rate as f32 };
         let expected_frame_length_seconds = 1.0 / refresh_rate;
         let frame_duration = Duration::from_secs_f32(expected_frame_length_seconds);
 
@@ -309,4 +311,10 @@ pub fn create_window(
 
         *control_flow = ControlFlow::WaitUntil(previous_frame_start + frame_duration)
     });
+}
+
+fn get_initial_window_size(font_dimesions: (u64, u64)) -> PhysicalSize<u32> {
+    let WindowGeometry { width, height } = SETTINGS.get_global::<CmdLineSettings>().geometry;
+    let (font_width, font_height) = font_dimesions;
+    PhysicalSize::new((width * font_width) as u32, (height * font_height) as u32)
 }

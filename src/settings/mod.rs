@@ -271,7 +271,7 @@ mod tests {
 
         //create_nvim_command tries to read from CmdLineSettings.neovim_args
         //TODO: this sets a static variable. Can this have side effects on other tests?
-        SETTINGS.set::<CmdLineSettings>(&CmdLineSettings::default());
+        SETTINGS.set_global::<CmdLineSettings>(&CmdLineSettings::default());
 
         let (nvim, _) = create::new_child_cmd(&mut create_nvim_command(), NeovimHandler())
             .await

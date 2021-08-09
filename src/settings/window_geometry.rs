@@ -41,7 +41,7 @@ pub const DEFAULT_WINDOW_GEOMETRY: WindowGeometry = WindowGeometry {
 };
 
 pub fn maybe_save_window_size(grid_size: Option<WindowGeometry>) {
-    let settings = SETTINGS.get::<WindowSettings>();
+    let settings = SETTINGS.get_global::<WindowSettings>();
     let saved_window_size = if settings.remember_window_size && grid_size.is_some() {
         grid_size.unwrap()
     } else {

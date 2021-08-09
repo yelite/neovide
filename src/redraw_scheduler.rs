@@ -19,7 +19,7 @@ impl Default for RedrawSettings {
     fn default() -> Self {
         Self {
             extra_buffer_frames: if SETTINGS
-                .get::<CmdLineSettings>()
+                .get_global::<CmdLineSettings>()
                 .neovim_args
                 .contains(&"--extraBufferFrames".to_string())
             {

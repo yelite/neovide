@@ -65,7 +65,7 @@ impl KeyboardManager {
             }
             Event::MainEventsCleared => {
                 // And the window wasn't just focused.
-                let settings = SETTINGS.get::<KeyboardSettings>();
+                let settings = SETTINGS.get_global::<KeyboardSettings>();
 
                 if !self.should_ignore_input(&settings) {
                     // If we have a keyboard event this frame

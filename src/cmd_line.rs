@@ -127,7 +127,7 @@ pub fn handle_command_line_arguments() -> Result<(), String> {
      * NEOVIM_BIN
      * NEOVIDE_MULTIGRID || --multigrid
      */
-    SETTINGS.set::<CmdLineSettings>(&CmdLineSettings {
+    SETTINGS.set_global::<CmdLineSettings>(&CmdLineSettings {
         neovim_bin: std::env::var("NEOVIM_BIN").ok(),
         neovim_args: matches
             .values_of("neovim_args")

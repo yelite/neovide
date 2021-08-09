@@ -30,13 +30,13 @@ fn struct_stream(name: Ident, prefix: String, data: &DataStruct) -> TokenStream 
             let vim_setting_name = format!("{}{}", prefix, ident);
             quote! {{
                 fn update_func(value: rmpv::Value) {
-                    let mut s = crate::settings::SETTINGS.get::<#name>();
+                    let mut s = crate::settings::SETTINGS.get_global::<#name>();
                     s.#ident.from_value(value);
-                    crate::settings::SETTINGS.set(&s);
+                    crate::settings::SETTINGS.set_global(&s);
                 }
 
                 fn reader_func() -> rmpv::Value {
-                    let s = crate::settings::SETTINGS.get::<#name>();
+                    let s = crate::settings::SETTINGS.get_global::<#name>();
                     s.#ident.into()
                 }
 
@@ -55,7 +55,7 @@ fn struct_stream(name: Ident, prefix: String, data: &DataStruct) -> TokenStream 
         impl #name {
             pub fn register() {
                 let s: Self = Default::default();
-                crate::settings::SETTINGS.set(&s);
+                crate::settings::SETTINGS.set_global(&s);
                 #(#fragments)*
             }
         }

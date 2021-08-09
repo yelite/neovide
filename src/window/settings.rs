@@ -18,7 +18,7 @@ impl Default for WindowSettings {
             iso_layout: false,
             refresh_rate: 60,
             no_idle: SETTINGS
-                .get::<CmdLineSettings>()
+                .get_global::<CmdLineSettings>()
                 .neovim_args
                 .contains(&String::from("--noIdle")),
             remember_window_size: false,

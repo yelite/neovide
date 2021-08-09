@@ -32,7 +32,7 @@ fn set_windows_creation_flags(cmd: &mut Command) {
 
 #[cfg(windows)]
 fn platform_build_nvim_cmd(bin: &str) -> Option<Command> {
-    if SETTINGS.get::<CmdLineSettings>().wsl {
+    if SETTINGS.get_global::<CmdLineSettings>().wsl {
         let mut cmd = Command::new("wsl");
         cmd.args(&[
             bin.trim(),
@@ -57,7 +57,7 @@ fn platform_build_nvim_cmd(bin: &str) -> Option<Command> {
 }
 
 fn build_nvim_cmd() -> Command {
-    if let Some(path) = SETTINGS.get::<CmdLineSettings>().neovim_bin {
+    if let Some(path) = SETTINGS.get_global::<CmdLineSettings>().neovim_bin {
         if let Some(cmd) = platform_build_nvim_cmd(&path) {
             return cmd;
         } else {
@@ -65,7 +65,7 @@ fn build_nvim_cmd() -> Command {
         }
     }
     #[cfg(windows)]
-    if SETTINGS.get::<CmdLineSettings>().wsl {
+    if SETTINGS.get_global::<CmdLineSettings>().wsl {
         if let Ok(output) = std::process::Command::new("wsl")
             .args(&["bash", "-ic", "which nvim"])
             .output()
@@ -125,8 +125,8 @@ pub fn create_nvim_command() -> Command {
     let mut cmd = build_nvim_cmd();
 
     cmd.arg("--embed")
-        .args(SETTINGS.get::<CmdLineSettings>().neovim_args.iter())
-        .args(SETTINGS.get::<CmdLineSettings>().files_to_open.iter());
+        .args(SETTINGS.get_global::<CmdLineSettings>().neovim_args.iter())
+        .args(SETTINGS.get_global::<CmdLineSettings>().files_to_open.iter());
 
     info!("Starting neovim with: {:?}", cmd);
 
@@ -148,7 +148,7 @@ enum ConnectionMode {
 }
 
 fn connection_mode() -> ConnectionMode {
-    if let Some(arg) = SETTINGS.get::<CmdLineSettings>().remote_tcp {
+    if let Some(arg) = SETTINGS.get_global::<CmdLineSettings>().remote_tcp {
         ConnectionMode::RemoteTcp(arg)
     } else {
         ConnectionMode::Child
@@ -274,7 +274,7 @@ async fn start_neovim_runtime(
         .await
         .ok();
 
-    let settings = SETTINGS.get::<CmdLineSettings>();
+    let settings = SETTINGS.get_global::<CmdLineSettings>();
     let geometry = settings.geometry;
     let mut options = UiAttachOptions::new();
     options.set_linegrid_external(true);

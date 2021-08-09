@@ -351,7 +351,7 @@ impl Renderer {
                 .collect()
         };
 
-        let settings = SETTINGS.get::<RendererSettings>();
+        let settings = SETTINGS.get_global::<RendererSettings>();
         self.window_regions = windows
             .into_iter()
             .map(|window| {

@@ -176,7 +176,7 @@ fn main() {
 
 #[cfg(not(test))]
 pub fn init_logger() {
-    let settings = SETTINGS.get::<CmdLineSettings>();
+    let settings = SETTINGS.get_global::<CmdLineSettings>();
 
     let verbosity = match settings.verbosity {
         0 => "warn",
@@ -201,7 +201,7 @@ pub fn init_logger() {
 fn maybe_disown() {
     use std::{env, process};
 
-    let settings = SETTINGS.get::<CmdLineSettings>();
+    let settings = SETTINGS.get_global::<CmdLineSettings>();
 
     if cfg!(debug_assertions) || settings.nofork {
         return;
