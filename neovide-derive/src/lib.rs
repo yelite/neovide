@@ -85,7 +85,7 @@ fn build_variable_fragments(SettingData { field_name, vim_name, .. }: SettingDat
         fn update_func(value: rmpv::Value) {
             let mut setting_struct = crate::settings::SETTINGS.get_global::<#struct_name>();
             setting_struct.#field_name.from_value(value);
-            crate::settings::SETTINGS.set(&setting_struct);
+            crate::settings::SETTINGS.set_global(&setting_struct);
         }
 
         fn reader_func() -> rmpv::Value {
