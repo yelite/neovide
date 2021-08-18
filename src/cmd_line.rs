@@ -1,12 +1,15 @@
-use crate::settings::*;
-use crate::utils::Dimensions;
+use std::path::{Path, PathBuf};
 
 use clap::{App, Arg};
+
+use crate::settings::*;
+use crate::utils::Dimensions;
 
 #[derive(Clone, Debug)]
 pub struct CmdLineSettings {
     pub verbosity: u64,
     pub log_to_file: bool,
+    pub log_dir: Option<PathBuf>,
     pub neovim_args: Vec<String>,
     pub neovim_bin: Option<String>,
     pub files_to_open: Vec<String>,
@@ -28,6 +31,7 @@ impl Default for CmdLineSettings {
             neovim_bin: None,
             verbosity: 0,
             log_to_file: false,
+            log_dir: None,
             neovim_args: vec![],
             files_to_open: vec![],
             nofork: false,
@@ -58,6 +62,12 @@ pub fn handle_command_line_arguments() -> Result<(), String> {
             Arg::with_name("log_to_file")
                 .long("log")
                 .help("Log to a file"),
+        )
+        .arg(
+            Arg::with_name("log_dir")
+                .long("logdir")
+                .takes_value(true)
+                .help("Directory to write log files to")
         )
         .arg(
             Arg::with_name("nofork")
@@ -135,7 +145,10 @@ pub fn handle_command_line_arguments() -> Result<(), String> {
             .map(|opt| opt.map(|v| v.to_owned()).collect())
             .unwrap_or_default(),
         verbosity: matches.occurrences_of("verbosity"),
-        log_to_file: matches.is_present("log_to_file"),
+        log_to_file: matches.is_present("log_to_file") || std::env::var("NEOVIDE_LOG").is_ok(),
+        log_dir: matches.value_of("log_dir").map(|path| path.to_owned())
+                      .or_else(|| std::env::var("NEOVIDE_LOG_DIR").ok())
+                      .map(|path| Path::new(&path).to_path_buf()),
         files_to_open: matches
             .values_of("files")
             .map(|opt| opt.map(|v| v.to_owned()).collect())

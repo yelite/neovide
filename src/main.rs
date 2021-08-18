@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[cfg(not(test))]
-use flexi_logger::{Cleanup, Criterion, Duplicate, Logger, Naming};
+use flexi_logger::{Cleanup, Criterion, Duplicate, FileSpec, Logger, LoggerHandle, Naming};
 
 // Test naming occasionally uses camelCase with underscores to separate sections of
 // the test name.
@@ -119,8 +119,9 @@ fn main() {
         return;
     }
 
+    // Must keep reference to _logger alive for logging to work
     #[cfg(not(test))]
-    init_logger();
+    let _logger = init_logger();
 
     trace!("Neovide version: {}", crate_version!());
 
@@ -177,27 +178,41 @@ fn main() {
 }
 
 #[cfg(not(test))]
-pub fn init_logger() {
+pub fn init_logger() -> LoggerHandle {
     let settings = SETTINGS.get::<CmdLineSettings>();
 
-    let verbosity = match settings.verbosity {
-        0 => "warn",
-        1 => "info",
-        2 => "debug",
-        _ => "trace",
+    let logger_spec = if settings.log_to_file {
+        "neovide".to_owned()
+    } else {
+        let verbosity = match settings.verbosity {
+            0 => "warn",
+            1 => "info",
+            2 => "debug",
+            _ => "trace",
+        };
+        format!("neovide = {}", verbosity)
     };
-    let logger = match settings.log_to_file {
-        true => Logger::with_env_or_str("neovide")
-            .duplicate_to_stderr(Duplicate::Error)
-            .log_to_file()
+
+    let mut logger = Logger::try_with_str(logger_spec)
+        .unwrap()
+        .duplicate_to_stderr(Duplicate::Error);
+
+    if settings.log_to_file {
+        let mut file_spec = FileSpec::default();
+
+        if let Some(log_dir) = settings.log_dir {
+            file_spec = file_spec.directory(log_dir);
+        }
+
+        logger = logger.log_to_file(file_spec)
             .rotate(
                 Criterion::Size(10_000_000),
                 Naming::Timestamps,
-                Cleanup::KeepLogFiles(1),
-            ),
-        false => Logger::with_env_or_str(format!("neovide = {}", verbosity)),
-    };
-    logger.start().expect("Could not start logger");
+                Cleanup::KeepLogFiles(5),
+            );
+    }
+
+    logger.start().expect("Could not start logger")
 }
 
 fn maybe_disown() {
