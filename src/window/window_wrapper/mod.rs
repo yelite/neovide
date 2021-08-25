@@ -260,6 +260,7 @@ pub fn create_window(
         .with_gl_profile(GlProfile::Core)
         .with_vsync(false)
         .with_srgb(false)
+        .with_hardware_acceleration(None)
         .build_windowed(winit_window_builder, &event_loop)
         .unwrap();
     let windowed_context = unsafe { windowed_context.make_current().unwrap() };
