@@ -900,7 +900,7 @@ dependencies = [
  "wayland-client",
  "wayland-egl",
  "winapi",
- "winit",
+ "winit 0.24.0 (git+https://github.com/Kethku/winit?branch=new-keyboard-all)",
 ]
 
 [[package]]
@@ -1351,7 +1351,7 @@ dependencies = [
  "unicode-segmentation",
  "which",
  "winapi",
- "winit",
+ "winit 0.24.0 (git+https://github.com/rti/winit?branch=fix-gnome-x11-meta-mod-focus)",
  "winres",
 ]
 
@@ -2561,6 +2561,38 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "winit"
+version = "0.24.0"
+source = "git+https://github.com/rti/winit?branch=fix-gnome-x11-meta-mod-focus#95f8e9294dbe8a7d382338465632b0f53814ed84"
+dependencies = [
+ "bitflags",
+ "cocoa",
+ "core-foundation 0.9.1",
+ "core-graphics 0.22.2",
+ "core-video-sys",
+ "dispatch",
+ "instant",
+ "lazy_static",
+ "libc",
+ "log",
+ "mio",
+ "mio-misc",
+ "nameof",
+ "ndk",
+ "ndk-glue",
+ "ndk-sys",
+ "objc",
+ "parking_lot 0.11.2",
+ "percent-encoding",
+ "raw-window-handle",
+ "scopeguard",
+ "unicode-segmentation",
+ "winapi",
+ "x11-dl",
+ "xkbcommon-dl",
+]
 
 [[package]]
 name = "winit"

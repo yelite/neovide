@@ -40,7 +40,7 @@ rand = "0.7"
 pin-project = "0.4.27"
 futures = "0.3.12"
 glutin = { git = "https://github.com/Kethku/glutin", branch = "new-keyboard-all" }
-winit = { git = "https://github.com/Kethku/winit", branch = "new-keyboard-all", default-features = false }
+winit = { git = "https://github.com/rti/winit", branch = "fix-gnome-x11-meta-mod-focus", default-features = false, features = ["x11"] }
 gl = "0.14.0"
 swash = "0.1.4"
 clap="2.33.3"
