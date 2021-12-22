@@ -131,7 +131,7 @@ fn main() {
 
     // trace!("Neovide version: {}", crate_version!());
 
-    // maybe_disown();
+    maybe_disown();
 
     // #[cfg(target_os = "windows")]
     // windows_fix_dpi();
@@ -203,11 +203,11 @@ pub fn init_logger() {
 fn maybe_disown() {
     use std::{env, process};
 
-    let settings = SETTINGS.get::<CmdLineSettings>();
+    // let settings = SETTINGS.get::<CmdLineSettings>();
 
-    if cfg!(debug_assertions) || settings.no_fork {
-        return;
-    }
+    // if cfg!(debug_assertions) || settings.no_fork {
+    //     return;
+    // }
 
     if let Ok(current_exe) = env::current_exe() {
         assert!(process::Command::new(current_exe)
