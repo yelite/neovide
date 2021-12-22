@@ -1,5 +1,5 @@
-mod keyboard_manager;
-mod mouse_manager;
+// mod keyboard_manager;
+// mod mouse_manager;
 mod renderer;
 mod settings;
 
@@ -34,8 +34,8 @@ use crate::{
     utils::Dimensions,
 };
 use image::{load_from_memory, GenericImageView, Pixel};
-use keyboard_manager::KeyboardManager;
-use mouse_manager::MouseManager;
+// use keyboard_manager::KeyboardManager;
+// use mouse_manager::MouseManager;
 use renderer::SkiaRenderer;
 
 pub use settings::{KeyboardSettings, WindowSettings};

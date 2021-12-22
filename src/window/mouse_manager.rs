@@ -362,21 +362,21 @@ impl MouseManager {
                 state == &ElementState::Pressed,
                 keyboard_manager,
             ),
-            Event::WindowEvent {
-                event:
-                    WindowEvent::KeyboardInput {
-                        event: key_event, ..
-                    },
-                ..
-            } => {
-                if key_event.state == ElementState::Pressed {
-                    let window_settings = SETTINGS.get::<WindowSettings>();
-                    if window_settings.hide_mouse_when_typing && !self.mouse_hidden {
-                        windowed_context.window().set_cursor_visible(false);
-                        self.mouse_hidden = true;
-                    }
-                }
-            }
+            // Event::WindowEvent {
+            //     event:
+            //         WindowEvent::KeyboardInput {
+            //             event: key_event, ..
+            //         },
+            //     ..
+            // } => {
+            //     if key_event.state == ElementState::Pressed {
+            //         let window_settings = SETTINGS.get::<WindowSettings>();
+            //         if window_settings.hide_mouse_when_typing && !self.mouse_hidden {
+            //             windowed_context.window().set_cursor_visible(false);
+            //             self.mouse_hidden = true;
+            //         }
+            //     }
+            // }
             _ => {}
         }
     }
