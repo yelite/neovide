@@ -252,22 +252,22 @@ pub fn create_window(
     // window_command_receiver: Receiver<WindowCommand>,
     // ui_command_sender: LoggingTx<UiCommand>,
 ) {
-    let icon = {
-        let icon = load_from_memory(ICON).expect("Failed to parse icon data");
-        let (width, height) = icon.dimensions();
-        let mut rgba = Vec::with_capacity((width * height) as usize * 4);
-        for (_, _, pixel) in icon.pixels() {
-            rgba.extend_from_slice(&pixel.to_rgba().0);
-        }
-        Icon::from_rgba(rgba, width, height).expect("Failed to create icon object")
-    };
+    // let icon = {
+    //     let icon = load_from_memory(ICON).expect("Failed to parse icon data");
+    //     let (width, height) = icon.dimensions();
+    //     let mut rgba = Vec::with_capacity((width * height) as usize * 4);
+    //     for (_, _, pixel) in icon.pixels() {
+    //         rgba.extend_from_slice(&pixel.to_rgba().0);
+    //     }
+    //     Icon::from_rgba(rgba, width, height).expect("Failed to create icon object")
+    // };
 
     let event_loop = EventLoop::new();
 
     // let cmd_line_settings = SETTINGS.get::<CmdLineSettings>();
-    let winit_window_builder = window::WindowBuilder::new()
-        .with_title("Neovide")
-        .with_window_icon(Some(icon));
+    let winit_window_builder = window::WindowBuilder::new();
+        // .with_title("Neovide")
+        // .with_window_icon(Some(icon));
         // .with_maximized(cmd_line_settings.maximized)
         // .with_transparent(true)
         // .with_decorations(!cmd_line_settings.frameless);
@@ -281,10 +281,10 @@ pub fn create_window(
     //     );
 
     let windowed_context = ContextBuilder::new()
-        .with_pixel_format(24, 8)
-        .with_stencil_buffer(8)
-        .with_gl_profile(GlProfile::Core)
-        .with_vsync(false)
+        // .with_pixel_format(24, 8)
+        // .with_stencil_buffer(8)
+        // .with_gl_profile(GlProfile::Core)
+        // .with_vsync(false)
         // .with_srgb(cmd_line_settings.srgb)
         .build_windowed(winit_window_builder, &event_loop)
         .unwrap();

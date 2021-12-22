@@ -131,7 +131,7 @@ fn main() {
 
     // trace!("Neovide version: {}", crate_version!());
 
-    maybe_disown();
+    // maybe_disown();
 
     // #[cfg(target_os = "windows")]
     // windows_fix_dpi();
