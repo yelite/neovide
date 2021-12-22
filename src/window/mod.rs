@@ -177,11 +177,11 @@ impl GlutinWindowWrapper {
         let window = self.windowed_context.window();
         let mut font_changed = false;
 
-        if REDRAW_SCHEDULER.should_draw() || SETTINGS.get::<WindowSettings>().no_idle {
-            // font_changed = self.renderer.draw_frame(self.skia_renderer.canvas(), dt);
-            // self.skia_renderer.gr_context.flush(None);
-            self.windowed_context.swap_buffers().unwrap();
-        }
+        // if REDRAW_SCHEDULER.should_draw() || SETTINGS.get::<WindowSettings>().no_idle {
+        //     // font_changed = self.renderer.draw_frame(self.skia_renderer.canvas(), dt);
+        //     // self.skia_renderer.gr_context.flush(None);
+        //     self.windowed_context.swap_buffers().unwrap();
+        // }
 
         // Wait until fonts are loaded, so we can set proper window size.
         // if !self.renderer.grid_renderer.is_ready {
@@ -189,22 +189,22 @@ impl GlutinWindowWrapper {
         // }
 
         let new_size = window.inner_size();
-        let settings = SETTINGS.get::<CmdLineSettings>();
+        // let settings = SETTINGS.get::<CmdLineSettings>();
         // Resize at startup happens when window is maximized or when using tiling WM
         // which already resized window.
-        let resized_at_startup = settings.maximized || is_already_resized(new_size);
+        // let resized_at_startup = settings.maximized || is_already_resized(new_size);
 
-        if self.saved_grid_size.is_none() && !resized_at_startup {
-            // window.set_inner_size(
-            //     self.renderer
-            //         .grid_renderer
-            //         .convert_grid_to_physical(settings.geometry),
-            // );
-            self.saved_grid_size = Some(settings.geometry);
-            // Font change at startup is ignored, so grid size (and startup screen) could be preserved.
-            // But only when not resized yet. With maximized or resized window we should redraw grid.
-            font_changed = false;
-        }
+        // if self.saved_grid_size.is_none() && !resized_at_startup {
+        //     // window.set_inner_size(
+        //     //     self.renderer
+        //     //         .grid_renderer
+        //     //         .convert_grid_to_physical(settings.geometry),
+        //     // );
+        //     self.saved_grid_size = Some(settings.geometry);
+        //     // Font change at startup is ignored, so grid size (and startup screen) could be preserved.
+        //     // But only when not resized yet. With maximized or resized window we should redraw grid.
+        //     font_changed = false;
+        // }
 
         if self.saved_inner_size != new_size || font_changed {
             self.saved_inner_size = new_size;
@@ -264,28 +264,28 @@ pub fn create_window(
 
     let event_loop = EventLoop::new();
 
-    let cmd_line_settings = SETTINGS.get::<CmdLineSettings>();
+    // let cmd_line_settings = SETTINGS.get::<CmdLineSettings>();
     let winit_window_builder = window::WindowBuilder::new()
         .with_title("Neovide")
-        .with_window_icon(Some(icon))
-        .with_maximized(cmd_line_settings.maximized)
+        .with_window_icon(Some(icon));
+        // .with_maximized(cmd_line_settings.maximized)
         // .with_transparent(true)
-        .with_decorations(!cmd_line_settings.frameless);
+        // .with_decorations(!cmd_line_settings.frameless);
 
-    #[cfg(target_os = "linux")]
-    let winit_window_builder = winit_window_builder
-        .with_app_id(SETTINGS.get::<CmdLineSettings>().wayland_app_id)
-        .with_class(
-            "neovide".to_string(),
-            SETTINGS.get::<CmdLineSettings>().x11_wm_class,
-        );
+    // #[cfg(target_os = "linux")]
+    // let winit_window_builder = winit_window_builder
+    //     .with_app_id(SETTINGS.get::<CmdLineSettings>().wayland_app_id)
+    //     .with_class(
+    //         "neovide".to_string(),
+    //         SETTINGS.get::<CmdLineSettings>().x11_wm_class,
+    //     );
 
     let windowed_context = ContextBuilder::new()
         .with_pixel_format(24, 8)
         .with_stencil_buffer(8)
         .with_gl_profile(GlProfile::Core)
         .with_vsync(false)
-        .with_srgb(cmd_line_settings.srgb)
+        // .with_srgb(cmd_line_settings.srgb)
         .build_windowed(winit_window_builder, &event_loop)
         .unwrap();
     let windowed_context = unsafe { windowed_context.make_current().unwrap() };
@@ -329,11 +329,11 @@ pub fn create_window(
         let frame_start = Instant::now();
 
         window_wrapper.handle_window_commands();
-        window_wrapper.synchronize_settings();
+        // window_wrapper.synchronize_settings();
         window_wrapper.handle_event(e);
 
-        let refresh_rate = { SETTINGS.get::<WindowSettings>().refresh_rate as f32 };
-        let expected_frame_length_seconds = 1.0 / refresh_rate;
+        // let refresh_rate = { SETTINGS.get::<WindowSettings>().refresh_rate as f32 };
+        let expected_frame_length_seconds = 1.0 / 60.0;
         let frame_duration = Duration::from_secs_f32(expected_frame_length_seconds);
 
         if frame_start - previous_frame_start > frame_duration {

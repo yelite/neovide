@@ -117,32 +117,32 @@ fn main() {
     //   Multiple other parts of the app "queue_next_frame" function to ensure animations continue
     //   properly or updates to the graphics are pushed to the screen.
 
-    #[cfg(target_os = "windows")]
-    windows_attach_to_console();
+    // #[cfg(target_os = "windows")]
+    // windows_attach_to_console();
 
     //Will exit if -h or -v
-    if let Err(err) = cmd_line::handle_command_line_arguments(args().collect()) {
-        eprintln!("{}", err);
-        return;
-    }
+    // if let Err(err) = cmd_line::handle_command_line_arguments(args().collect()) {
+    //     eprintln!("{}", err);
+    //     return;
+    // }
 
-    #[cfg(not(test))]
-    init_logger();
+    // #[cfg(not(test))]
+    // init_logger();
 
-    trace!("Neovide version: {}", crate_version!());
+    // trace!("Neovide version: {}", crate_version!());
 
-    maybe_disown();
+    // maybe_disown();
 
-    #[cfg(target_os = "windows")]
-    windows_fix_dpi();
+    // #[cfg(target_os = "windows")]
+    // windows_fix_dpi();
 
-    #[cfg(target_os = "macos")]
-    handle_macos();
+    // #[cfg(target_os = "macos")]
+    // handle_macos();
 
-    WindowSettings::register();
-    RendererSettings::register();
-    CursorSettings::register();
-    KeyboardSettings::register();
+    // WindowSettings::register();
+    // RendererSettings::register();
+    // CursorSettings::register();
+    // KeyboardSettings::register();
 
     // let (redraw_event_sender, redraw_event_receiver) = unbounded_channel();
     // let logging_redraw_event_sender =
