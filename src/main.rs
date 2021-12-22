@@ -144,9 +144,9 @@ fn main() {
     CursorSettings::register();
     KeyboardSettings::register();
 
-    let (redraw_event_sender, redraw_event_receiver) = unbounded_channel();
-    let logging_redraw_event_sender =
-        LoggingTx::attach(redraw_event_sender, "redraw_event".to_owned());
+    // let (redraw_event_sender, redraw_event_receiver) = unbounded_channel();
+    // let logging_redraw_event_sender =
+    //     LoggingTx::attach(redraw_event_sender, "redraw_event".to_owned());
 
     let (batched_draw_command_sender, batched_draw_command_receiver) = channel();
     let logging_batched_draw_command_sender = LoggingSender::attach(
@@ -162,17 +162,17 @@ fn main() {
         LoggingSender::attach(window_command_sender, "window_command".to_owned());
 
     // We need to keep the bridge reference around to prevent the tokio runtime from getting freed
-    let _bridge = start_bridge(
-        #[cfg(windows)]
-        logging_ui_command_sender.clone(),
-        ui_command_receiver,
-        logging_redraw_event_sender,
-    );
-    start_editor(
-        redraw_event_receiver,
-        logging_batched_draw_command_sender,
-        logging_window_command_sender,
-    );
+    // let _bridge = start_bridge(
+    //     #[cfg(windows)]
+    //     logging_ui_command_sender.clone(),
+    //     ui_command_receiver,
+    //     logging_redraw_event_sender,
+    // );
+    // start_editor(
+    //     redraw_event_receiver,
+    //     logging_batched_draw_command_sender,
+    //     logging_window_command_sender,
+    // );
     create_window(
         batched_draw_command_receiver,
         window_command_receiver,
