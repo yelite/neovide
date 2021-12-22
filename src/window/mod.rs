@@ -47,8 +47,8 @@ const MIN_WINDOW_HEIGHT: u64 = 6;
 
 pub struct GlutinWindowWrapper {
     windowed_context: WindowedContext<glutin::PossiblyCurrent>,
-    skia_renderer: SkiaRenderer,
-    renderer: Renderer,
+    // skia_renderer: SkiaRenderer,
+    // renderer: Renderer,
     keyboard_manager: KeyboardManager,
     mouse_manager: MouseManager,
     title: String,
@@ -126,7 +126,7 @@ impl GlutinWindowWrapper {
         self.mouse_manager.handle_event(
             &event,
             &self.keyboard_manager,
-            &self.renderer,
+            // &self.renderer,
             &self.windowed_context,
         );
         match event {
@@ -178,15 +178,15 @@ impl GlutinWindowWrapper {
         let mut font_changed = false;
 
         if REDRAW_SCHEDULER.should_draw() || SETTINGS.get::<WindowSettings>().no_idle {
-            font_changed = self.renderer.draw_frame(self.skia_renderer.canvas(), dt);
-            self.skia_renderer.gr_context.flush(None);
+            // font_changed = self.renderer.draw_frame(self.skia_renderer.canvas(), dt);
+            // self.skia_renderer.gr_context.flush(None);
             self.windowed_context.swap_buffers().unwrap();
         }
 
         // Wait until fonts are loaded, so we can set proper window size.
-        if !self.renderer.grid_renderer.is_ready {
-            return;
-        }
+        // if !self.renderer.grid_renderer.is_ready {
+        //     return;
+        // }
 
         let new_size = window.inner_size();
         let settings = SETTINGS.get::<CmdLineSettings>();
@@ -195,11 +195,11 @@ impl GlutinWindowWrapper {
         let resized_at_startup = settings.maximized || is_already_resized(new_size);
 
         if self.saved_grid_size.is_none() && !resized_at_startup {
-            window.set_inner_size(
-                self.renderer
-                    .grid_renderer
-                    .convert_grid_to_physical(settings.geometry),
-            );
+            // window.set_inner_size(
+            //     self.renderer
+            //         .grid_renderer
+            //         .convert_grid_to_physical(settings.geometry),
+            // );
             self.saved_grid_size = Some(settings.geometry);
             // Font change at startup is ignored, so grid size (and startup screen) could be preserved.
             // But only when not resized yet. With maximized or resized window we should redraw grid.
@@ -209,41 +209,41 @@ impl GlutinWindowWrapper {
         if self.saved_inner_size != new_size || font_changed {
             self.saved_inner_size = new_size;
             self.handle_new_grid_size(new_size);
-            self.skia_renderer.resize(&self.windowed_context);
+            // self.skia_renderer.resize(&self.windowed_context);
         }
     }
 
     fn handle_new_grid_size(&mut self, new_size: PhysicalSize<u32>) {
-        let grid_size = self
-            .renderer
-            .grid_renderer
-            .convert_physical_to_grid(new_size);
+        // let grid_size = self
+        //     .renderer
+        //     .grid_renderer
+        //     .convert_physical_to_grid(new_size);
 
         // Have a minimum size
-        if grid_size.width < MIN_WINDOW_WIDTH || grid_size.height < MIN_WINDOW_HEIGHT {
-            return;
-        }
+        // if grid_size.width < MIN_WINDOW_WIDTH || grid_size.height < MIN_WINDOW_HEIGHT {
+        //     return;
+        // }
 
-        if self.saved_grid_size == Some(grid_size) {
-            trace!("Grid matched saved size, skip update.");
-            return;
-        }
-        self.saved_grid_size = Some(grid_size);
-        self.ui_command_sender
-            .send(
-                ParallelCommand::Resize {
-                    width: grid_size.width,
-                    height: grid_size.height,
-                }
-                .into(),
-            )
-            .ok();
+        // if self.saved_grid_size == Some(grid_size) {
+        //     trace!("Grid matched saved size, skip update.");
+        //     return;
+        // }
+        // self.saved_grid_size = Some(grid_size);
+        // self.ui_command_sender
+        //     .send(
+        //         ParallelCommand::Resize {
+        //             width: grid_size.width,
+        //             height: grid_size.height,
+        //         }
+        //         .into(),
+        //     )
+        //     .ok();
     }
 
     fn handle_scale_factor_update(&mut self, scale_factor: f64) {
-        self.renderer
-            .grid_renderer
-            .handle_scale_factor_update(scale_factor);
+        // self.renderer
+        //     .grid_renderer
+        //     .handle_scale_factor_update(scale_factor);
     }
 }
 
@@ -293,21 +293,21 @@ pub fn create_window(
     let window = windowed_context.window();
 
     let scale_factor = windowed_context.window().scale_factor();
-    let renderer = Renderer::new(batched_draw_command_receiver, scale_factor);
+    // let renderer = Renderer::new(batched_draw_command_receiver, scale_factor);
     let saved_inner_size = window.inner_size();
 
-    let skia_renderer = SkiaRenderer::new(&windowed_context);
+    // let skia_renderer = SkiaRenderer::new(&windowed_context);
 
-    log::info!(
-        "window created (scale_factor: {:.4}, font_dimensions: {:?})",
-        scale_factor,
-        renderer.grid_renderer.font_dimensions,
-    );
+    // log::info!(
+    //     "window created (scale_factor: {:.4}, font_dimensions: {:?})",
+    //     scale_factor,
+    //     renderer.grid_renderer.font_dimensions,
+    // );
 
     let mut window_wrapper = GlutinWindowWrapper {
         windowed_context,
-        skia_renderer,
-        renderer,
+        // skia_renderer,
+        // renderer,
         keyboard_manager: KeyboardManager::new(ui_command_sender.clone()),
         mouse_manager: MouseManager::new(ui_command_sender.clone()),
         title: String::from("Neovide"),

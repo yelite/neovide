@@ -90,7 +90,7 @@ impl MouseManager {
         x: i32,
         y: i32,
         keyboard_manager: &KeyboardManager,
-        renderer: &Renderer,
+        // renderer: &Renderer,
         windowed_context: &WindowedContext<PossiblyCurrent>,
     ) {
         let size = windowed_context.window().inner_size();
@@ -102,88 +102,88 @@ impl MouseManager {
 
         // If dragging, the relevant window (the one which we send all commands to) is the one
         // which the mouse drag started on. Otherwise its the top rendered window
-        let relevant_window_details = if self.dragging.is_some() {
-            renderer.window_regions.iter().find(|details| {
-                details.id
-                    == self
-                        .window_details_under_mouse
-                        .as_ref()
-                        .expect("If dragging, there should be a window details recorded")
-                        .id
-            })
-        } else {
-            // the rendered window regions are sorted by draw order, so the earlier windows in the
-            // list are drawn under the later ones
-            renderer
-                .window_regions
-                .iter()
-                .filter(|details| {
-                    position.x >= details.region.left
-                        && position.x < details.region.right
-                        && position.y >= details.region.top
-                        && position.y < details.region.bottom
-                })
-                .last()
-        };
+        // let relevant_window_details = if self.dragging.is_some() {
+        //     renderer.window_regions.iter().find(|details| {
+        //         details.id
+        //             == self
+        //                 .window_details_under_mouse
+        //                 .as_ref()
+        //                 .expect("If dragging, there should be a window details recorded")
+        //                 .id
+        //     })
+        // } else {
+        //     // the rendered window regions are sorted by draw order, so the earlier windows in the
+        //     // list are drawn under the later ones
+        //     renderer
+        //         .window_regions
+        //         .iter()
+        //         .filter(|details| {
+        //             position.x >= details.region.left
+        //                 && position.x < details.region.right
+        //                 && position.y >= details.region.top
+        //                 && position.y < details.region.bottom
+        //         })
+        //         .last()
+        // };
 
-        let global_bounds = relevant_window_details
-            .map(|details| details.region)
-            .unwrap_or_else(|| Rect::from_wh(size.width as f32, size.height as f32));
-        let clamped_position = clamp_position(
-            position,
-            global_bounds,
-            renderer.grid_renderer.font_dimensions.into(),
-        );
+        // let global_bounds = relevant_window_details
+        //     .map(|details| details.region)
+        //     .unwrap_or_else(|| Rect::from_wh(size.width as f32, size.height as f32));
+        // let clamped_position = clamp_position(
+        //     position,
+        //     global_bounds,
+        //     renderer.grid_renderer.font_dimensions.into(),
+        // );
 
-        self.position = to_grid_coords(
-            clamped_position,
-            renderer.grid_renderer.font_dimensions.into(),
-        );
+        // self.position = to_grid_coords(
+        //     clamped_position,
+        //     renderer.grid_renderer.font_dimensions.into(),
+        // );
 
-        if let Some(relevant_window_details) = relevant_window_details {
-            let relative_position = PhysicalPosition::new(
-                clamped_position.x - relevant_window_details.region.left,
-                clamped_position.y - relevant_window_details.region.top,
-            );
-            self.relative_position = to_grid_coords(
-                relative_position,
-                renderer.grid_renderer.font_dimensions.into(),
-            );
+        // if let Some(relevant_window_details) = relevant_window_details {
+        //     let relative_position = PhysicalPosition::new(
+        //         clamped_position.x - relevant_window_details.region.left,
+        //         clamped_position.y - relevant_window_details.region.top,
+        //     );
+        //     self.relative_position = to_grid_coords(
+        //         relative_position,
+        //         renderer.grid_renderer.font_dimensions.into(),
+        //     );
 
-            let previous_position = self.drag_position;
-            // Until https://github.com/neovim/neovim/pull/12667 is merged, we have to special
-            // case non floating windows. Floating windows correctly transform mouse positions
-            // into grid coordinates, but non floating windows do not.
-            self.drag_position = if relevant_window_details.floating_order.is_some() {
-                // Floating windows handle relative grid coordinates just fine
-                self.relative_position
-            } else {
-                // Non floating windows need global coordinates
-                self.position
-            };
+        //     let previous_position = self.drag_position;
+        //     // Until https://github.com/neovim/neovim/pull/12667 is merged, we have to special
+        //     // case non floating windows. Floating windows correctly transform mouse positions
+        //     // into grid coordinates, but non floating windows do not.
+        //     self.drag_position = if relevant_window_details.floating_order.is_some() {
+        //         // Floating windows handle relative grid coordinates just fine
+        //         self.relative_position
+        //     } else {
+        //         // Non floating windows need global coordinates
+        //         self.position
+        //     };
 
-            let has_moved = self.drag_position != previous_position;
+        //     let has_moved = self.drag_position != previous_position;
 
-            // If dragging and we haven't already sent a position, send a drag command
-            if self.dragging.is_some() && has_moved {
-                self.command_sender
-                    .send(
-                        SerialCommand::Drag {
-                            button: self.dragging.as_ref().unwrap().to_owned(),
-                            grid_id: relevant_window_details.id,
-                            position: self.drag_position.into(),
-                            modifier_string: keyboard_manager.format_modifier_string(true),
-                        }
-                        .into(),
-                    )
-                    .ok();
-            } else {
-                // otherwise, update the window_id_under_mouse to match the one selected
-                self.window_details_under_mouse = Some(relevant_window_details.clone());
-            }
+        //     // If dragging and we haven't already sent a position, send a drag command
+        //     if self.dragging.is_some() && has_moved {
+        //         self.command_sender
+        //             .send(
+        //                 SerialCommand::Drag {
+        //                     button: self.dragging.as_ref().unwrap().to_owned(),
+        //                     grid_id: relevant_window_details.id,
+        //                     position: self.drag_position.into(),
+        //                     modifier_string: keyboard_manager.format_modifier_string(true),
+        //                 }
+        //                 .into(),
+        //             )
+        //             .ok();
+        //     } else {
+        //         // otherwise, update the window_id_under_mouse to match the one selected
+        //         self.window_details_under_mouse = Some(relevant_window_details.clone());
+        //     }
 
-            self.has_moved = self.dragging.is_some() && (self.has_moved || has_moved);
-        }
+        //     self.has_moved = self.dragging.is_some() && (self.has_moved || has_moved);
+        // }
     }
 
     fn handle_pointer_transition(
@@ -314,7 +314,7 @@ impl MouseManager {
         &mut self,
         event: &Event<()>,
         keyboard_manager: &KeyboardManager,
-        renderer: &Renderer,
+        // renderer: &Renderer,
         windowed_context: &WindowedContext<PossiblyCurrent>,
     ) {
         match event {
@@ -326,7 +326,7 @@ impl MouseManager {
                     position.x as i32,
                     position.y as i32,
                     keyboard_manager,
-                    renderer,
+                    // renderer,
                     windowed_context,
                 );
                 if self.mouse_hidden {
@@ -342,18 +342,18 @@ impl MouseManager {
                     },
                 ..
             } => self.handle_line_scroll(*x, *y, keyboard_manager),
-            Event::WindowEvent {
-                event:
-                    WindowEvent::MouseWheel {
-                        delta: MouseScrollDelta::PixelDelta(delta),
-                        ..
-                    },
-                ..
-            } => self.handle_pixel_scroll(
-                renderer.grid_renderer.font_dimensions.into(),
-                (delta.x as f32, delta.y as f32),
-                keyboard_manager,
-            ),
+            // Event::WindowEvent {
+            //     event:
+            //         WindowEvent::MouseWheel {
+            //             delta: MouseScrollDelta::PixelDelta(delta),
+            //             ..
+            //         },
+            //     ..
+            // } => self.handle_pixel_scroll(
+            //     renderer.grid_renderer.font_dimensions.into(),
+            //     (delta.x as f32, delta.y as f32),
+            //     keyboard_manager,
+            // ),
             Event::WindowEvent {
                 event: WindowEvent::MouseInput { button, state, .. },
                 ..
