@@ -148,18 +148,18 @@ fn main() {
     // let logging_redraw_event_sender =
     //     LoggingTx::attach(redraw_event_sender, "redraw_event".to_owned());
 
-    let (batched_draw_command_sender, batched_draw_command_receiver) = channel();
-    let logging_batched_draw_command_sender = LoggingSender::attach(
-        batched_draw_command_sender,
-        "batched_draw_command".to_owned(),
-    );
+    // let (batched_draw_command_sender, batched_draw_command_receiver) = channel();
+    // let logging_batched_draw_command_sender = LoggingSender::attach(
+    //     batched_draw_command_sender,
+    //     "batched_draw_command".to_owned(),
+    // );
 
-    let (ui_command_sender, ui_command_receiver) = unbounded_channel();
-    let logging_ui_command_sender = LoggingTx::attach(ui_command_sender, "ui_command".to_owned());
+    // let (ui_command_sender, ui_command_receiver) = unbounded_channel();
+    // let logging_ui_command_sender = LoggingTx::attach(ui_command_sender, "ui_command".to_owned());
 
-    let (window_command_sender, window_command_receiver) = channel();
-    let logging_window_command_sender =
-        LoggingSender::attach(window_command_sender, "window_command".to_owned());
+    // let (window_command_sender, window_command_receiver) = channel();
+    // let logging_window_command_sender =
+    //     LoggingSender::attach(window_command_sender, "window_command".to_owned());
 
     // We need to keep the bridge reference around to prevent the tokio runtime from getting freed
     // let _bridge = start_bridge(
@@ -174,9 +174,9 @@ fn main() {
     //     logging_window_command_sender,
     // );
     create_window(
-        batched_draw_command_receiver,
-        window_command_receiver,
-        logging_ui_command_sender,
+        // batched_draw_command_receiver,
+        // window_command_receiver,
+        // logging_ui_command_sender,
     );
 }
 

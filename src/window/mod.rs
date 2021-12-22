@@ -49,14 +49,14 @@ pub struct GlutinWindowWrapper {
     windowed_context: WindowedContext<glutin::PossiblyCurrent>,
     // skia_renderer: SkiaRenderer,
     // renderer: Renderer,
-    keyboard_manager: KeyboardManager,
-    mouse_manager: MouseManager,
+    // keyboard_manager: KeyboardManager,
+    // mouse_manager: MouseManager,
     title: String,
     fullscreen: bool,
     saved_inner_size: PhysicalSize<u32>,
     saved_grid_size: Option<Dimensions>,
-    ui_command_sender: LoggingTx<UiCommand>,
-    window_command_receiver: Receiver<WindowCommand>,
+    // ui_command_sender: LoggingTx<UiCommand>,
+    // window_command_receiver: Receiver<WindowCommand>,
 }
 
 impl GlutinWindowWrapper {
@@ -82,15 +82,15 @@ impl GlutinWindowWrapper {
 
     #[allow(clippy::needless_collect)]
     pub fn handle_window_commands(&mut self) {
-        let window_commands: Vec<WindowCommand> = self.window_command_receiver.try_iter().collect();
-        for window_command in window_commands.into_iter() {
-            match window_command {
-                WindowCommand::TitleChanged(new_title) => self.handle_title_changed(new_title),
-                WindowCommand::SetMouseEnabled(mouse_enabled) => {
-                    self.mouse_manager.enabled = mouse_enabled
-                }
-            }
-        }
+        // let window_commands: Vec<WindowCommand> = self.window_command_receiver.try_iter().collect();
+        // for window_command in window_commands.into_iter() {
+        //     match window_command {
+        //         WindowCommand::TitleChanged(new_title) => self.handle_title_changed(new_title),
+        //         // WindowCommand::SetMouseEnabled(mouse_enabled) => {
+        //         //     self.mouse_manager.enabled = mouse_enabled
+        //         // }
+        //     }
+        // }
     }
 
     pub fn handle_title_changed(&mut self, new_title: String) {
@@ -100,35 +100,35 @@ impl GlutinWindowWrapper {
 
     pub fn handle_quit(&mut self) {
         if SETTINGS.get::<CmdLineSettings>().remote_tcp.is_none() {
-            self.ui_command_sender
-                .send(ParallelCommand::Quit.into())
-                .expect("Could not send quit command to bridge");
+            // self.ui_command_sender
+            //     .send(ParallelCommand::Quit.into())
+            //     .expect("Could not send quit command to bridge");
         } else {
             RUNNING_TRACKER.quit("window closed");
         }
     }
 
     pub fn handle_focus_lost(&mut self) {
-        self.ui_command_sender
-            .send(ParallelCommand::FocusLost.into())
-            .ok();
+        // self.ui_command_sender
+        //     .send(ParallelCommand::FocusLost.into())
+        //     .ok();
     }
 
     pub fn handle_focus_gained(&mut self) {
-        self.ui_command_sender
-            .send(ParallelCommand::FocusGained.into())
-            .ok();
+        // self.ui_command_sender
+        //     .send(ParallelCommand::FocusGained.into())
+        //     .ok();
         REDRAW_SCHEDULER.queue_next_frame();
     }
 
     pub fn handle_event(&mut self, event: Event<()>) {
-        self.keyboard_manager.handle_event(&event);
-        self.mouse_manager.handle_event(
-            &event,
-            &self.keyboard_manager,
-            // &self.renderer,
-            &self.windowed_context,
-        );
+        // self.keyboard_manager.handle_event(&event);
+        // self.mouse_manager.handle_event(
+        //     &event,
+        //     &self.keyboard_manager,
+        //     // &self.renderer,
+        //     &self.windowed_context,
+        // );
         match event {
             Event::LoopDestroyed => {
                 self.handle_quit();
@@ -149,12 +149,12 @@ impl GlutinWindowWrapper {
                 event: WindowEvent::DroppedFile(path),
                 ..
             } => {
-                self.ui_command_sender
-                    .send(
-                        ParallelCommand::FileDrop(path.into_os_string().into_string().unwrap())
-                            .into(),
-                    )
-                    .ok();
+                // self.ui_command_sender
+                //     .send(
+                //         ParallelCommand::FileDrop(path.into_os_string().into_string().unwrap())
+                //             .into(),
+                //     )
+                //     .ok();
             }
             Event::WindowEvent {
                 event: WindowEvent::Focused(focus),
@@ -248,9 +248,9 @@ impl GlutinWindowWrapper {
 }
 
 pub fn create_window(
-    batched_draw_command_receiver: Receiver<Vec<DrawCommand>>,
-    window_command_receiver: Receiver<WindowCommand>,
-    ui_command_sender: LoggingTx<UiCommand>,
+    // batched_draw_command_receiver: Receiver<Vec<DrawCommand>>,
+    // window_command_receiver: Receiver<WindowCommand>,
+    // ui_command_sender: LoggingTx<UiCommand>,
 ) {
     let icon = {
         let icon = load_from_memory(ICON).expect("Failed to parse icon data");
@@ -269,7 +269,7 @@ pub fn create_window(
         .with_title("Neovide")
         .with_window_icon(Some(icon))
         .with_maximized(cmd_line_settings.maximized)
-        .with_transparent(true)
+        // .with_transparent(true)
         .with_decorations(!cmd_line_settings.frameless);
 
     #[cfg(target_os = "linux")]
@@ -292,7 +292,7 @@ pub fn create_window(
 
     let window = windowed_context.window();
 
-    let scale_factor = windowed_context.window().scale_factor();
+    // let scale_factor = windowed_context.window().scale_factor();
     // let renderer = Renderer::new(batched_draw_command_receiver, scale_factor);
     let saved_inner_size = window.inner_size();
 
@@ -308,14 +308,14 @@ pub fn create_window(
         windowed_context,
         // skia_renderer,
         // renderer,
-        keyboard_manager: KeyboardManager::new(ui_command_sender.clone()),
-        mouse_manager: MouseManager::new(ui_command_sender.clone()),
+        // keyboard_manager: KeyboardManager::new(ui_command_sender.clone()),
+        // mouse_manager: MouseManager::new(ui_command_sender.clone()),
         title: String::from("Neovide"),
         fullscreen: false,
         saved_inner_size,
         saved_grid_size: None,
-        ui_command_sender,
-        window_command_receiver,
+        // ui_command_sender,
+        // window_command_receiver,
     };
 
     let mut previous_frame_start = Instant::now();
