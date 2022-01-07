@@ -2561,42 +2561,6 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "winit"
 version = "0.24.0"
-source = "git+https://github.com/Kethku/winit?branch=new-keyboard-all#fc49a506ed255059ccdb72885b5f525fb4ed2510"
-dependencies = [
- "bitflags",
- "cocoa",
- "core-foundation 0.9.2",
- "core-graphics 0.22.3",
- "core-video-sys",
- "dispatch",
- "instant",
- "lazy_static",
- "libc",
- "log",
- "memmap2 0.2.3",
- "mio",
- "mio-misc",
- "nameof",
- "ndk",
- "ndk-glue",
- "ndk-sys",
- "objc",
- "parking_lot 0.11.2",
- "percent-encoding",
- "raw-window-handle 0.3.4",
- "scopeguard",
- "serde",
- "smithay-client-toolkit",
- "unicode-segmentation",
- "wayland-client",
- "winapi",
- "x11-dl",
- "xkbcommon-dl",
-]
-
-[[package]]
-name = "winit"
-version = "0.24.0"
 source = "git+https://github.com/neovide/winit?branch=new-keyboard-all#fc49a506ed255059ccdb72885b5f525fb4ed2510"
 dependencies = [
  "bitflags",
