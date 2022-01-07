@@ -899,7 +899,7 @@ dependencies = [
  "wayland-client",
  "wayland-egl",
  "winapi",
- "winit 0.24.0 (git+https://github.com/Kethku/winit?branch=new-keyboard-all)",
+ "winit",
 ]
 
 [[package]]
@@ -1344,7 +1344,7 @@ dependencies = [
  "unicode-segmentation",
  "which",
  "winapi",
- "winit 0.24.0 (git+https://github.com/neovide/winit?branch=new-keyboard-all)",
+ "winit",
  "winres",
  "xdg",
 ]
